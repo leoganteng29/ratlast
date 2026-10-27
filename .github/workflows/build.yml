@@ -29,22 +29,16 @@ jobs:
       - name: Overwrite Main Dart
         run: cp main.dart lib/main.dart
 
-      # 🔥 1. IZINKAN HTTP (CLEARTEXT) DI ANDROID
+      # IZINKAN HTTP (CLEARTEXT) KARENA PAKAI IP/HTTP
       - name: Allow Cleartext Traffic
         run: |
-          sed -i 's/<application/<application android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml\/network_security_config"/g' android/app/src/main/AndroidManifest.xml
-          
-          # Buat folder xml dan file network_security_config.xml
-          mkdir -p android/app/src/main/res/xml
-          echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"><trust-anchors><certificates src="system" /></trust-anchors></base-config></network-security-config>' > android/app/src/main/res/xml/network_security_config.xml
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/g' android/app/src/main/AndroidManifest.xml
 
-      # 🔥 2. HAPUS VERSIONCODE GRADLE YANG BIKIN ERROR
       - name: Fix Gradle Version
         run: |
           sed -i '/versionCode flutter.versionCode/d' android/app/build.gradle
           sed -i '/versionName flutter.versionName/d' android/app/build.gradle
 
-      # 🔥 3. BUILD APK KHUSUS ARM64
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
