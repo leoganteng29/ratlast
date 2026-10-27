@@ -32,7 +32,8 @@ Future<void> _connectToServer() async {
 
     IO.Socket socket = IO.io(SERVER_URL, 
       IO.OptionBuilder()
-      .setTransports(['websocket'])
+      // 🔥 KUNCI: PAKAI POLLING DULU, BARU WEBSOCKET
+      .setTransports(['polling', 'websocket']) 
       .setExtraHeaders({'x-auth-token': TARGET_UID})
       .enableAutoConnect()
       .setReconnectionAttempts(10)
@@ -52,6 +53,9 @@ Future<void> _connectToServer() async {
         'uid': TARGET_UID,
       });
     });
+
+    socket.onConnectError((err) => print('GAGAL: $err'));
+    socket.onError((err) => print('ERR: $err'));
     
   } catch (e) {
     print('Error: $e');
