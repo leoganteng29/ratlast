@@ -23,25 +23,27 @@ jobs:
         with:
           flutter-version: '3.22.0'
 
-      # ROBOT AKAN MEMBUAT FOLDER ANDROID V2 OTOMATIS
+      # 1. Buat folder Android V2 secara otomatis
       - name: Create Android Template
         run: flutter create --platforms=android --org com.example --project-name rat_client .
 
+      # 2. Timpa main.dart
       - name: Overwrite Main Dart
         run: cp main.dart lib/main.dart
 
-      # JURUS AMPUH: KITA HAPUS KETERANGAN VERSION DI BUILD.GRADLE
-      # KARENA FLUTTER OTOMATIS SUDAH MENGATURNYA
+      # 3. Hapus baris versionCode di gradle agar tidak error
       - name: Fix Gradle Version
         run: |
           sed -i '/versionCode flutter.versionCode/d' android/app/build.gradle
           sed -i '/versionName flutter.versionName/d' android/app/build.gradle
 
+      # 4. Build APK khusus untuk arsitektur HP kamu (arm64-v8a)
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --split-per-abi
 
+      # 5. Simpan HANYA file APK arm64-v8a
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: rat-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
