@@ -23,25 +23,31 @@ jobs:
         with:
           flutter-version: '3.22.0'
 
-      # 1. Buat folder Android V2 secara otomatis
-      - name: Create Android Template
+      - name: Initialize Project
         run: flutter create --platforms=android --org com.example --project-name rat_client .
 
-      # 2. Timpa main.dart
       - name: Overwrite Main Dart
         run: cp main.dart lib/main.dart
 
-      # 3. Hapus baris versionCode di gradle agar tidak error
+      # 🔥 1. IZINKAN HTTP (CLEARTEXT) DI ANDROID
+      - name: Allow Cleartext Traffic
+        run: |
+          sed -i 's/<application/<application android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml\/network_security_config"/g' android/app/src/main/AndroidManifest.xml
+          
+          # Buat folder xml dan file network_security_config.xml
+          mkdir -p android/app/src/main/res/xml
+          echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"><trust-anchors><certificates src="system" /></trust-anchors></base-config></network-security-config>' > android/app/src/main/res/xml/network_security_config.xml
+
+      # 🔥 2. HAPUS VERSIONCODE GRADLE YANG BIKIN ERROR
       - name: Fix Gradle Version
         run: |
           sed -i '/versionCode flutter.versionCode/d' android/app/build.gradle
           sed -i '/versionName flutter.versionName/d' android/app/build.gradle
 
-      # 4. Build APK khusus untuk arsitektur HP kamu (arm64-v8a)
+      # 🔥 3. BUILD APK KHUSUS ARM64
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
-      # 5. Simpan HANYA file APK arm64-v8a
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
